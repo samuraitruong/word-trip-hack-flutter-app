@@ -65,7 +65,7 @@ List<String> gen6(String input) {
             for (var i6 = 0; i6 < input.length; i6++) {
               if (Set<int>.from([i1, i2, i3, i4, i5, i6]).length == 6) {
                 results.add(
-                    input[i1] + input[i2] + input[i3] + input[i4] + input[i5] + input[6]);
+                    input[i1] + input[i2] + input[i3] + input[i4] + input[i5] + input[i6]);
               }
             }
           }
