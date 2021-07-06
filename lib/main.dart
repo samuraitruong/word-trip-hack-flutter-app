@@ -3,10 +3,10 @@ import 'word_gen.dart';
 import 'validate.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(WordTripHackApp());
 }
 
-class MyApp extends StatelessWidget {
+class WordTripHackApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -22,15 +22,15 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.orange,
       ),
-      home: MyHomePage(title: 'Word Trip Hack'),
+      home: WordTripHackHome(title: 'Word Trip Hack'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+class WordTripHackHome extends StatefulWidget {
+  WordTripHackHome({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -44,34 +44,41 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _WordTripHackHomeState createState() => _WordTripHackHomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _WordTripHackHomeState extends State<WordTripHackHome> {
   // Future<List<String>> _listWords;
   List<String> _listWords = [];
   int _letterCount = 0;
+  int _fetching = 0;
   final myController = TextEditingController();
 
-  void _set3Letters() async {
-    var list = await filterValidWords(gen3(myController.text));
+  void _fetchWords(int len) async {
+
     setState(() {
-      _listWords = list;
+      _listWords = [];
+      _fetching = 1;
     });
-  }
-
-  void _set4Letters() async {
-    var list = await filterValidWords(gen4(myController.text));
+    List<String> words = [];
+    switch(len) {
+      case 3:
+        words = gen3(myController.text);
+        break;
+      case 4:
+        words = gen4(myController.text);
+        break;
+      case 5:
+        words = gen5(myController.text);
+        break;
+      case 6:
+        words = gen6(myController.text);
+        break;
+    }
+    var list = await filterValidWords(words);
     setState(() {
       _listWords = list;
-    });
-  }
-
-
-  void _set5Letters() async {
-    var list = await filterValidWords(gen5(myController.text));
-    setState(() {
-      _listWords = list;
+      _fetching = -1;
     });
   }
 
@@ -88,8 +95,10 @@ class _MyHomePageState extends State<MyHomePage> {
             TextField(
               controller: myController,
               onChanged: (text) {
+                // myController.text = myController.text.toUpperCase();
                 setState(() {
                   _letterCount = text.length;
+                  _listWords = [];
                 });
               },
               decoration: InputDecoration(
@@ -115,22 +124,43 @@ class _MyHomePageState extends State<MyHomePage> {
             //       return new Text(data[Index]);
             //     });
             //   })
-            Opacity(
-                opacity: _listWords.length> 0 ? 0:1,
+            Visibility(
+                visible: _listWords.length == 0 && _fetching == 0,
                 child: Padding(
                     padding: EdgeInsets.all(16.0),
                     child: Text('No Result found')
                 )
             ),
+            Visibility(
+                visible: _fetching > 0,
+                child: Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator()
+                )
+            ),
+
             new Expanded(
                 child: Padding(
                       padding: EdgeInsets.all(16.0),
-                      child: new ListView.builder
+                      child: new GridView.builder
                       (
                         itemCount: _listWords.length,
-                        itemBuilder: (BuildContext ctxt, int Index) {
-                          return new Text(_listWords[Index].toUpperCase(), style: TextStyle(fontSize: 30),);
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: MediaQuery.of(context).orientation ==
+                          Orientation.landscape ? 3: 2,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          childAspectRatio: (4 / 1),
+                          ),
+                        itemBuilder: (context, index,) {
+                          return GestureDetector(
+                          onTap:() {},
+                            child: new Text(_listWords[index].toUpperCase(), style: TextStyle(fontSize: 30),)
+                          );
                         }
+                        // itemBuilder: (BuildContext ctxt, int Index) {
+                        //   return new Text(_listWords[Index].toUpperCase(), style: TextStyle(fontSize: 30),);
+                        // }
                     )
                 )
             ),
@@ -139,67 +169,65 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: Stack(
         children: <Widget>[
-          Opacity(
-            opacity: _letterCount >=3 ? 1: 0,
+          Visibility(
+            visible: _letterCount >=3,
             child: Padding(
               padding: EdgeInsets.only(right: 180),
               child: Align(
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
-                    heroTag: "btn1",
-                    // backgroundColor: Color(0XFF0D325E),
-                    backgroundColor: Colors.red,
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black87,
                     // child: Icon(Icons.refresh),
                     child: Text('3'),
-                    onPressed: _set3Letters
+                    onPressed: () => _fetchWords(3)
               ))),
           ),
-          Opacity(
-            opacity: _letterCount >= 4 ? 1: 0,
+          Visibility(
+              visible: _letterCount >=4,
             child: Padding(
                 padding: EdgeInsets.only(right: 120),
                 child:  Align(
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
-                  heroTag: "btn2",
-                  backgroundColor: Color(0XFF0D325E),
+                  backgroundColor: Colors.amber,
+                  foregroundColor: Colors.black87,
 
                   // child: Icon(Icons.refresh),('
                   child: Text("4"),
-                  onPressed: _set4Letters
+                  onPressed: () => _fetchWords(4)
               )
             )
           )),
-          Opacity(
-              opacity: _letterCount >= 5 ? 1: 0,
+          Visibility(
+              visible: _letterCount >=5,
               child: Padding(
                   padding: EdgeInsets.only(right: 60),
                   child: Align(
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
-                      heroTag: "btn2",
-                      backgroundColor: Color(0XFF0D325E),
-
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black87,
                       // child: Icon(Icons.refresh),('
                       child: Text("5"),
-                      onPressed: _set5Letters
+                      onPressed: () => _fetchWords(5)
                   )
               )
           )),
 
-          Opacity(
-              opacity: _letterCount >= 5 ? 1: 0,
+        Visibility(
+            visible: _letterCount >=6,
               child: Padding(
                   padding: EdgeInsets.only(right: 0),
                   child: Align(
                       alignment: Alignment.bottomRight,
                       child: FloatingActionButton(
-                          heroTag: "btn2",
-                          backgroundColor: Color(0XFF0D325E),
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.black87,
 
                           // child: Icon(Icons.refresh),('
                           child: Text("6"),
-                          onPressed: _set5Letters
+                          onPressed: () => _fetchWords(6)
                       )
                   )
               ))

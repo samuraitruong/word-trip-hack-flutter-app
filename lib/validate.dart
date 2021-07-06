@@ -6,7 +6,7 @@ import 'dart:convert';
 Future<bool> isWordExist(String word) async {
 
   var response = await http.head(Uri.parse('https://samuraitruong.github.io/open-vn-en-dict/data/' + word.toLowerCase() + ".json"));
-  print(word + "--- " + response.statusCode.toString());
+  // print(word + "--- " + response.statusCode.toString());
   if (response.statusCode == 200) {
     return true;
   }
@@ -28,15 +28,20 @@ Future<List<String>> filterValidWords(List<String> list) async {
       if(current[word] == 0) return word;
       if(current[word] == 1) {
         outputs.add(word);
-
         return word;
       }
 
-      current[word] = 0;
-      if(await isWordExist(word)){
-        print('Valid ' + word);
-        current[word] = 1;
-        outputs.add(word);
+      try {
+
+        if (await isWordExist(word)) {
+          print('Valid ' + word);
+          current[word] = 1;
+          outputs.add(word);
+        }else {
+          current[word] = 0;
+        }
+      }catch(err) {
+          print(err);
       }
       return word;
   }));
@@ -50,5 +55,6 @@ Future<List<String>> filterValidWords(List<String> list) async {
   //   }
   // });
   // print('Return me' + outputs.toString());
+  outputs.sort((a,b) => a.compareTo(b));
   return outputs;
 }
