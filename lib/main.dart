@@ -52,7 +52,10 @@ class _WordTripHackHomeState extends State<WordTripHackHome> {
   List<String> _listWords = [];
   int _letterCount = 0;
   int _fetching = 0;
+  String subtext = '';
+
   final myController = TextEditingController();
+  final subController = TextEditingController();
 
   void _fetchWords(int len) async {
 
@@ -74,6 +77,12 @@ class _WordTripHackHomeState extends State<WordTripHackHome> {
       case 6:
         words = gen6(myController.text);
         break;
+      case 7:
+        words = gen7(myController.text);
+        break;
+    }
+    if(subController.text != "") {
+      words = words.where((element) => element.contains(subController.text)).toList();
     }
     var list = await filterValidWords(words);
     setState(() {
@@ -92,20 +101,43 @@ class _WordTripHackHomeState extends State<WordTripHackHome> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            TextField(
-              controller: myController,
-              onChanged: (text) {
-                // myController.text = myController.text.toUpperCase();
-                setState(() {
-                  _letterCount = text.length;
-                  _listWords = [];
-                });
-              },
-              decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Enter input characters'
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Expanded(
+                  child: new Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: TextField(
+                      controller: myController,
+                      onChanged: (text) {
+                        // myController.text = myController.text.toUpperCase();
+                        setState(() {
+                          _letterCount = text.length;
+                          _listWords = [];
+                        });
+                      },
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Enter input characters'
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: new Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: TextField(
+                      controller: subController,
+                      decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Must Included sub-text'
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
 
             // FutureBuilder<List<String>>(
             //   initialData: [],
@@ -172,7 +204,7 @@ class _WordTripHackHomeState extends State<WordTripHackHome> {
           Visibility(
             visible: _letterCount >=3,
             child: Padding(
-              padding: EdgeInsets.only(right: 180),
+              padding: EdgeInsets.only(right: 0),
               child: Align(
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
@@ -186,7 +218,7 @@ class _WordTripHackHomeState extends State<WordTripHackHome> {
           Visibility(
               visible: _letterCount >=4,
             child: Padding(
-                padding: EdgeInsets.only(right: 120),
+                padding: EdgeInsets.only(right: 60),
                 child:  Align(
               alignment: Alignment.bottomRight,
               child: FloatingActionButton(
@@ -202,7 +234,7 @@ class _WordTripHackHomeState extends State<WordTripHackHome> {
           Visibility(
               visible: _letterCount >=5,
               child: Padding(
-                  padding: EdgeInsets.only(right: 60),
+                  padding: EdgeInsets.only(right: 120),
                   child: Align(
                   alignment: Alignment.bottomRight,
                   child: FloatingActionButton(
@@ -218,7 +250,7 @@ class _WordTripHackHomeState extends State<WordTripHackHome> {
         Visibility(
             visible: _letterCount >=6,
               child: Padding(
-                  padding: EdgeInsets.only(right: 0),
+                  padding: EdgeInsets.only(right: 180),
                   child: Align(
                       alignment: Alignment.bottomRight,
                       child: FloatingActionButton(
@@ -228,6 +260,22 @@ class _WordTripHackHomeState extends State<WordTripHackHome> {
                           // child: Icon(Icons.refresh),('
                           child: Text("6"),
                           onPressed: () => _fetchWords(6)
+                      )
+                  )
+              )),
+          Visibility(
+              visible: _letterCount >=7,
+              child: Padding(
+                  padding: EdgeInsets.only(right: 240),
+                  child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: FloatingActionButton(
+                          backgroundColor: Colors.amber,
+                          foregroundColor: Colors.black87,
+
+                          // child: Icon(Icons.refresh),('
+                          child: Text("7"),
+                          onPressed: () => _fetchWords(7)
                       )
                   )
               ))
